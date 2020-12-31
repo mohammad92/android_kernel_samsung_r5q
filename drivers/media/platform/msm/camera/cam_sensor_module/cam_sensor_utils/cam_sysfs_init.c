@@ -208,7 +208,25 @@ static ssize_t rear_type_show(struct device *dev,
 static ssize_t rear_type_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
+	int rc = 0;
 	char cam_type_lsi[] = "SLSI_S5KGW1\n";
+
+	char cam_type_sony[] = "SONY_IMX682\n";
+
+	if (cam_fw_ver[4] == 'L')
+		rc = scnprintf(buf, PAGE_SIZE, "%s", cam_type_lsi);
+	else
+		rc = scnprintf(buf, PAGE_SIZE, "%s", cam_type_sony);
+
+	if (rc)
+		return rc;
+	return 0;
+}
+#elif defined(CONFIG_SEC_M51_PROJECT) || defined(CONFIG_SEC_A52Q_PROJECT) || defined(CONFIG_SEC_A72Q_PROJECT) || defined(CONFIG_SEC_M42Q_PROJECT)
+static ssize_t rear_type_show(struct device *dev,
+	struct device_attribute *attr, char *buf)
+{
+	char cam_type_lsi[] = "SONY_IMX682\n";
 
 	return scnprintf(buf, PAGE_SIZE, "%s", cam_type_lsi);
 }
@@ -261,7 +279,7 @@ static ssize_t front_camera_type_show(struct device *dev,
 		return rc;
 	return 0;
 }
-#elif defined(CONFIG_SEC_R5Q_PROJECT) || defined(CONFIG_SEC_A71_PROJECT) || defined(CONFIG_SEC_M51_PROJECT)
+#elif defined(CONFIG_SEC_R5Q_PROJECT) || defined(CONFIG_SEC_A71_PROJECT) || defined(CONFIG_SEC_M51_PROJECT) || defined(CONFIG_SEC_A52Q_PROJECT) || defined(CONFIG_SEC_A72Q_PROJECT) || defined(CONFIG_SEC_M42Q_PROJECT)
 static ssize_t front_camera_type_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
@@ -1621,7 +1639,7 @@ static ssize_t rear3_camera_info_store(struct device *dev,
 
 	return size;
 }
-#if defined(CONFIG_SEC_A71_PROJECT) || defined(CONFIG_SEC_M51_PROJECT)
+#if defined(CONFIG_SEC_A71_PROJECT) || defined(CONFIG_SEC_M51_PROJECT) || defined(CONFIG_SEC_A52Q_PROJECT) || defined(CONFIG_SEC_A72Q_PROJECT) || defined(CONFIG_SEC_M42Q_PROJECT)
 //MACRO
 char rear4_cam_info[150] = "NULL\n";	//camera_info
 static ssize_t rear4_camera_info_show(struct device *dev,
@@ -1704,6 +1722,18 @@ static ssize_t rear2_type_show(struct device *dev,
 		return rc;
 	return 0;
 }
+#elif defined(CONFIG_SEC_M51_PROJECT) || defined(CONFIG_SEC_A52Q_PROJECT) || defined(CONFIG_SEC_A72Q_PROJECT) || defined(CONFIG_SEC_M42Q_PROJECT)
+static ssize_t rear2_type_show(struct device *dev,
+	struct device_attribute *attr, char *buf)
+{
+	int rc = 0;
+	char cam_type[] = "SLSI_S5K3L6\n";
+
+	rc = scnprintf(buf, PAGE_SIZE, "%s", cam_type);
+	if (rc)
+		return rc;
+	return 0;
+}
 #else
 static ssize_t rear2_type_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
@@ -1743,7 +1773,7 @@ static ssize_t rear3_type_show(struct device *dev,
 		return rc;
 	return 0;
 }
-#elif defined(CONFIG_SEC_A71_PROJECT) || defined(CONFIG_SEC_M51_PROJECT)
+#elif defined(CONFIG_SEC_A71_PROJECT) || defined(CONFIG_SEC_M51_PROJECT) || defined(CONFIG_SEC_A52Q_PROJECT) || defined(CONFIG_SEC_A72Q_PROJECT) || defined(CONFIG_SEC_M42Q_PROJECT)
 static ssize_t rear3_type_show(struct device *dev,
 			struct device_attribute *attr, char *buf)
 {
@@ -2521,7 +2551,7 @@ char supported_camera_ids[] = {
 #endif
 #if defined(CONFIG_SEC_A70Q_PROJECT) || defined(CONFIG_SEC_A60Q_PROJECT) || defined(CONFIG_SEC_M40_PROJECT)\
 	|| defined(CONFIG_SEC_R3Q_PROJECT) || defined(CONFIG_SEC_A70S_PROJECT) || defined(CONFIG_SEC_A71_PROJECT)\
-	|| defined(CONFIG_SEC_M51_PROJECT)
+	|| defined(CONFIG_SEC_M51_PROJECT) || defined(CONFIG_SEC_A52Q_PROJECT) || defined(CONFIG_SEC_A72Q_PROJECT) || defined(CONFIG_SEC_M42Q_PROJECT)
 	21, //DUAL_REAR_PORTRAIT
 #endif
 #if defined(CONFIG_SEC_R5Q_PROJECT)
@@ -2540,7 +2570,7 @@ char supported_camera_ids[] = {
 #if defined(CONFIG_SAMSUNG_REAR_TRIPLE) && !defined(CONFIG_SAMSUNG_REAR_TOF) && !defined(CONFIG_SEC_R5Q_PROJECT)
 	52, //REAR_3RD = Rear Depth
 #endif
-#if defined(CONFIG_SEC_A71_PROJECT) || defined(CONFIG_SEC_R5Q_PROJECT) || defined(CONFIG_SEC_M51_PROJECT)
+#if defined(CONFIG_SEC_A71_PROJECT) || defined(CONFIG_SEC_R5Q_PROJECT) || defined(CONFIG_SEC_M51_PROJECT) || defined(CONFIG_SEC_A52Q_PROJECT) || defined(CONFIG_SEC_A72Q_PROJECT) || defined(CONFIG_SEC_M42Q_PROJECT)
 	54, // Macro Sensor
 #endif	
 #if defined(CONFIG_SAMSUNG_REAR_TOF)
@@ -4380,7 +4410,7 @@ static DEVICE_ATTR(rear4_sensorid_exif, S_IRUGO|S_IWUSR|S_IWGRP,
 static DEVICE_ATTR(rear4_mtf_exif, S_IRUGO|S_IWUSR|S_IWGRP,
 	rear4_mtf_exif_show, rear4_mtf_exif_store);
 static DEVICE_ATTR(rear4_moduleid, S_IRUGO,rear4_moduleid_show, NULL);
-#if defined(CONFIG_SEC_A71_PROJECT) || defined(CONFIG_SEC_M51_PROJECT)
+#if defined(CONFIG_SEC_A71_PROJECT) || defined(CONFIG_SEC_M51_PROJECT) || defined(CONFIG_SEC_A52Q_PROJECT) || defined(CONFIG_SEC_A72Q_PROJECT) || defined(CONFIG_SEC_M42Q_PROJECT)
 static DEVICE_ATTR(rear4_caminfo, S_IRUGO|S_IWUSR|S_IWGRP,
 	rear4_camera_info_show, rear4_camera_info_store);
 static DEVICE_ATTR(SVC_rear_module4, S_IRUGO, rear4_moduleid_show, NULL);
@@ -4943,7 +4973,7 @@ static int __init cam_sysfs_init(void)
 		pr_err("Failed to create device file!(%s)!\n",
 			dev_attr_rear3_caminfo.attr.name);
 	}
-#if defined(CONFIG_SEC_A71_PROJECT) || defined(CONFIG_SEC_M51_PROJECT)
+#if defined(CONFIG_SEC_A71_PROJECT) || defined(CONFIG_SEC_M51_PROJECT) || defined(CONFIG_SEC_A52Q_PROJECT) || defined(CONFIG_SEC_A72Q_PROJECT) || defined(CONFIG_SEC_M42Q_PROJECT)
 	if (device_create_file(cam_dev_rear, &dev_attr_rear4_caminfo) < 0) {
 		pr_err("Failed to create device file!(%s)!\n",
 			dev_attr_rear4_caminfo.attr.name);
@@ -5045,7 +5075,7 @@ static int __init cam_sysfs_init(void)
 			dev_attr_rear4_moduleid.attr.name);
 		ret = -ENODEV;
 	}	
-#if defined(CONFIG_SEC_A71_PROJECT) || defined(CONFIG_SEC_M51_PROJECT)
+#if defined(CONFIG_SEC_A71_PROJECT) || defined(CONFIG_SEC_M51_PROJECT) || defined(CONFIG_SEC_A52Q_PROJECT) || defined(CONFIG_SEC_A72Q_PROJECT) || defined(CONFIG_SEC_M42Q_PROJECT)
         if (sysfs_create_file(SVC, &dev_attr_SVC_rear_module4.attr) < 0) {
                 printk("Failed to create device file!(%s)!\n",
                         dev_attr_SVC_rear_module4.attr.name);

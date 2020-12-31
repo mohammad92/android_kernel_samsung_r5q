@@ -189,9 +189,11 @@ struct dd_user_resp {
 
 static inline int get_user_resp_err(struct dd_user_resp *err, int num_err, unsigned long ino) {
 	int i;
-	for(i=0 ; i<num_err ; i++)
-		if (err[i].ino == ino)
-			return err[i].err;
+	if (num_err <= MAX_NUM_REQUEST_PER_CONTROL) {
+		for (i = 0; i < num_err; i++)
+			if (err[i].ino == ino)
+				return err[i].err;
+	}
 
 	return -ENOENT;
 }

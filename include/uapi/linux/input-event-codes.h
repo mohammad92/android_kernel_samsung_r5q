@@ -828,6 +828,7 @@
 #define SW_MICROPHONE2_INSERT	0x12  /* set = inserted */
 #define SW_UNSUPPORT_INSERT	0x13  /* set = unsupported device inserted */
 #define SW_PEN_INSERT		0x13  /* set = pen insert, remove */
+#define SW_MACHINE_COVER	0x14  /* set = cover closed */
 #define SW_GLOVE		0x20  /* set = glove mode */
 #define SW_MAX			0x20
 #define SW_CNT			(SW_MAX+1)

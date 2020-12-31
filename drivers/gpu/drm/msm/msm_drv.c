@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2020, The Linux Foundation. All rights reserved.
  * Copyright (C) 2013 Red Hat
  * Author: Rob Clark <robdclark@gmail.com>
  *
@@ -586,6 +586,14 @@ static int msm_drm_init(struct device *dev, struct drm_driver *drv)
 	if (ret)
 		goto fail;
 
+	if (!dev->dma_parms) {
+		dev->dma_parms = devm_kzalloc(dev, sizeof(*dev->dma_parms),
+					      GFP_KERNEL);
+		if (!dev->dma_parms)
+			return -ENOMEM;
+	}
+	dma_set_max_seg_size(dev, DMA_BIT_MASK(32));
+
 	switch (get_mdp_ver(pdev)) {
 	case KMS_MDP4:
 		kms = mdp4_kms_init(ddev);
@@ -767,16 +775,7 @@ static int msm_drm_init(struct device *dev, struct drm_driver *drv)
 	if (ret)
 		goto fail;
 
-	priv->debug_root = debugfs_create_dir("debug",
-					ddev->primary->debugfs_root);
-	if (IS_ERR_OR_NULL(priv->debug_root)) {
-		pr_err("debugfs_root create_dir fail, error %ld\n",
-		       PTR_ERR(priv->debug_root));
-		priv->debug_root = NULL;
-		goto fail;
-	}
-
-	ret = sde_dbg_debugfs_register(priv->debug_root);
+	ret = sde_dbg_debugfs_register(dev);
 	if (ret) {
 		dev_err(dev, "failed to reg sde dbg debugfs: %d\n", ret);
 		goto fail;
@@ -1415,21 +1414,22 @@ static int msm_ioctl_register_event(struct drm_device *dev, void *data,
 		spin_lock_irqsave(&dev->event_lock, flag);
 		list_add_tail(&client->base.link, &priv->client_event_list);
 		spin_unlock_irqrestore(&dev->event_lock, flag);
- 		return 0;
+		return 0;
 	}
- 
- 	ret = msm_register_event(dev, req_event, file, true);
- 	if (ret) {
- 		DRM_ERROR("failed to enable event %x object %x object id %d\n",
- 			req_event->event, req_event->object_type,
+
+	ret = msm_register_event(dev, req_event, file, true);
+	if (ret) {
+		DRM_ERROR("failed to enable event %x object %x object id %d\n",
+			req_event->event, req_event->object_type,
 			req_event->object_id);
 		kfree(client);
 	} else {
 		/* Add current client to list */
- 		spin_lock_irqsave(&dev->event_lock, flag);
+		spin_lock_irqsave(&dev->event_lock, flag);
 		list_add_tail(&client->base.link, &priv->client_event_list);
- 		spin_unlock_irqrestore(&dev->event_lock, flag);
- 	}
+		spin_unlock_irqrestore(&dev->event_lock, flag);
+	}
+
 	return ret;
 }
 
@@ -2071,7 +2071,8 @@ static int add_gpu_components(struct device *dev,
 	if (!np)
 		return 0;
 
-	drm_of_component_match_add(dev, matchptr, compare_of, np);
+	if (of_device_is_available(np))
+		drm_of_component_match_add(dev, matchptr, compare_of, np);
 
 	of_node_put(np);
 
@@ -2109,7 +2110,7 @@ static int msm_pdev_probe(struct platform_device *pdev)
 
 	ret = add_gpu_components(&pdev->dev, &match);
 	if (ret)
-		return ret;
+		goto fail;
 
 	if (!match)
 		return -ENODEV;
@@ -2117,7 +2118,16 @@ static int msm_pdev_probe(struct platform_device *pdev)
 	device_enable_async_suspend(&pdev->dev);
 
 	pdev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
-	return component_master_add_with_match(&pdev->dev, &msm_drm_ops, match);
+
+	ret = component_master_add_with_match(&pdev->dev, &msm_drm_ops, match);
+	if (ret)
+		goto fail;
+
+	return 0;
+
+fail:
+	of_platform_depopulate(&pdev->dev);
+	return ret;
 }
 
 static int msm_pdev_remove(struct platform_device *pdev)

@@ -2289,6 +2289,11 @@ ssize_t sec_bat_store_attrs(
 				pr_info("HV disable for store mode\n");
 				sec_bat_set_current_event(battery,
 						SEC_BAT_CURRENT_EVENT_HV_DISABLE, SEC_BAT_CURRENT_EVENT_HV_DISABLE);
+				if (is_pd_wire_type(battery->cable_type)) {
+					battery->update_pd_list = true;
+					pr_info("%s: update pd list\n", __func__);
+					select_pdo(1);
+				}
 #endif
 				wake_lock(&battery->parse_mode_dt_wake_lock);
 				queue_delayed_work(battery->monitor_wqueue,
@@ -2400,6 +2405,20 @@ ssize_t sec_bat_store_attrs(
 				queue_delayed_work(battery->monitor_wqueue,
 					&battery->monitor_work, 0);
 			}
+
+#if !defined(CONFIG_BATTERY_SAMSUNG_MHS)
+			if (lpcharge) {
+				if (battery->lcd_status &&
+					(battery->mfc_unknown_swelling || battery->mfc_unknown_fullcharged)) {
+					sec_bat_set_mfc_on(battery, true);
+					battery->mfc_work_check = false;
+					queue_delayed_work(battery->monitor_wqueue,
+						&battery->mfc_work, msecs_to_jiffies(2000));
+				} else {
+					cancel_delayed_work(&battery->mfc_work);
+				}
+			}
+#endif
 #endif
 			ret = count;
 		}
@@ -2882,7 +2901,7 @@ ssize_t sec_bat_store_attrs(
 				} else {
 					pr_info("%s: hv wireless charging is enabled\n", __func__);
 					sleep_mode = false;
-
+					battery->auto_mode = false;
 					value.intval = WIRELESS_SLEEP_MODE_DISABLE;
 					psy_do_property(battery->pdata->wireless_charger_name, set,
 								POWER_SUPPLY_PROP_INPUT_VOLTAGE_REGULATION, value);

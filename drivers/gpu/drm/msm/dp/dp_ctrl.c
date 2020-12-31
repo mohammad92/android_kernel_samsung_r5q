@@ -232,9 +232,13 @@ static int dp_ctrl_update_sink_vx_px(struct dp_ctrl_private *ctrl,
 static int dp_ctrl_update_vx_px(struct dp_ctrl_private *ctrl)
 {
 	struct dp_link *link = ctrl->link;
+	bool high = false;
 
+	if (ctrl->link->link_params.bw_code == DP_LINK_BW_5_4 ||
+		 ctrl->link->link_params.bw_code == DP_LINK_BW_8_1)
+		high = true;
 	ctrl->catalog->update_vx_px(ctrl->catalog,
-		link->phy_params.v_level, link->phy_params.p_level);
+		link->phy_params.v_level, link->phy_params.p_level, high);
 
 	return dp_ctrl_update_sink_vx_px(ctrl, link->phy_params.v_level,
 		link->phy_params.p_level);
@@ -487,6 +491,13 @@ static int dp_ctrl_link_train(struct dp_ctrl_private *ctrl)
 
 	ctrl->link->phy_params.p_level = 0;
 	ctrl->link->phy_params.v_level = 0;
+
+#ifdef CONFIG_SEC_DISPLAYPORT
+	if (secdp_check_hmd_dev("PicoVR")) {
+		pr_info("pico REAL Plus!\n");
+		ctrl->link->phy_params.v_level = 2;	/*800mV*/
+	}
+#endif
 
 	link_info.num_lanes = ctrl->link->link_params.lane_count;
 	link_info.rate = drm_dp_bw_code_to_link_rate(
@@ -1252,13 +1263,14 @@ static void dp_ctrl_stream_off(struct dp_ctrl *dp_ctrl, struct dp_panel *panel)
 
 #ifdef SECDP_OPTIMAL_LINK_RATE
 /* DP testbox list */
-static char secdp_tbox[][14] = {
+static char secdp_tbox[][MON_NAME_LEN] = {
 	"UNIGRAF TE",
 	"UFG DPR-120",
 	"UCD-400 DP",
 	"AGILENT ATR",
 	"UFG DP SINK",
 };
+#define SECDP_TBOX_MAX		32
 
 /** check if connected sink is testbox or not
  * return true		if it's testbox
@@ -1267,15 +1279,18 @@ static char secdp_tbox[][14] = {
 static bool secdp_check_tbox(struct dp_ctrl_private *ctrl)
 {
 	struct dp_panel *panel;
-	int i, rc;
+	unsigned long i, size = SECDP_TBOX_MAX;
 	bool ret = false;
 
 	if (!ctrl || !ctrl->panel)
 		goto end;
 
 	panel = ctrl->panel;
+	size = min(ARRAY_SIZE(secdp_tbox), size);
 
-	for (i = 0; i < dim(secdp_tbox); i++) {
+	for (i = 0; i < size; i++) {
+		int rc;
+
 		rc = strncmp(panel->monitor_name, secdp_tbox[i],
 				strlen(panel->monitor_name));
 		if (!rc) {

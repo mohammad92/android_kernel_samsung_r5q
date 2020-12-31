@@ -1156,5 +1156,8 @@ struct mfc_charger_data {
 	unsigned long gear_start_time;
 	int wpc_en_flag;
 	int tx_gear_phm;
+
+	bool req_tx_id;
+	bool is_abnormal_pad;
 };
 #endif /* __WIRELESS_CHARGER_MFC_H */

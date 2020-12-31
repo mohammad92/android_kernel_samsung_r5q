@@ -330,7 +330,9 @@ static int cam_eeprom_update_module_info(struct cam_eeprom_ctrl_t *e_ctrl)
 		memcpy(&front_af_cal[9], &e_ctrl->cal_data.mapdata[FROM_FRONT_AF_CAL_PAN_ADDR], 4);
 #endif
 
+#if defined(CONFIG_SAMSUNG_REAR_TRIPLE)
 		CAM_ERR(CAM_EEPROM, "front_af_cal[0] macro: %d, front_af_cal[9] pan: %d", front_af_cal[0], front_af_cal[9]);
+#endif
 		/* front mtf exif */
 		memcpy(front_mtf_exif, &e_ctrl->cal_data.mapdata[FROM_FRONT_MTF_ADDR], FROM_MTF_SIZE);
 		front_mtf_exif[FROM_MTF_SIZE] = '\0';

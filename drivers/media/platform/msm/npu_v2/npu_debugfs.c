@@ -10,8 +10,9 @@
  * GNU General Public License for more details.
  */
 
-/*
+/* -------------------------------------------------------------------------
  * Includes
+ * -------------------------------------------------------------------------
  */
 #include <linux/debugfs.h>
 
@@ -19,13 +20,15 @@
 #include "npu_hw_access.h"
 #include "npu_common.h"
 
-/*
+/* -------------------------------------------------------------------------
  * Defines
+ * -------------------------------------------------------------------------
  */
 #define NPU_LOG_BUF_SIZE 4096
 
-/*
+/* -------------------------------------------------------------------------
  * Function Prototypes
+ * -------------------------------------------------------------------------
  */
 static int npu_debug_open(struct inode *inode, struct file *file);
 static int npu_debug_release(struct inode *inode, struct file *file);
@@ -42,10 +45,11 @@ static ssize_t npu_debug_log_read(struct file *file,
 static ssize_t npu_debug_ctrl_write(struct file *file,
 		const char __user *user_buf, size_t count, loff_t *ppos);
 
-/*
+/* -------------------------------------------------------------------------
  * Variables
+ * -------------------------------------------------------------------------
  */
-struct npu_device *g_npu_dev;
+static struct npu_device *g_npu_dev;
 
 static const struct file_operations npu_reg_fops = {
 	.open = npu_debug_reg_open,
@@ -74,8 +78,9 @@ static const struct file_operations npu_ctrl_fops = {
 	.write = npu_debug_ctrl_write,
 };
 
-/*
+/* -------------------------------------------------------------------------
  * Function Implementations
+ * -------------------------------------------------------------------------
  */
 static int npu_debug_open(struct inode *inode, struct file *file)
 {
@@ -115,8 +120,9 @@ static int npu_debug_reg_release(struct inode *inode, struct file *file)
 	return 0;
 }
 
-/*
+/* -------------------------------------------------------------------------
  * Function Implementations - Reg Read/Write
+ * -------------------------------------------------------------------------
  */
 static ssize_t npu_debug_reg_read(struct file *file,
 			char __user *user_buf, size_t count, loff_t *ppos)
@@ -184,8 +190,9 @@ static ssize_t npu_debug_reg_read(struct file *file,
 	return len;
 }
 
-/*
+/* -------------------------------------------------------------------------
  * Function Implementations - Offset Read/Write
+ * -------------------------------------------------------------------------
  */
 static ssize_t npu_debug_off_write(struct file *file,
 		const char __user *user_buf, size_t count, loff_t *ppos)
@@ -248,8 +255,9 @@ static ssize_t npu_debug_off_read(struct file *file,
 	return len;
 }
 
-/*
+/* -------------------------------------------------------------------------
  * Function Implementations - DebugFS Log
+ * -------------------------------------------------------------------------
  */
 static ssize_t npu_debug_log_read(struct file *file,
 			char __user *user_buf, size_t count, loff_t *ppos)
@@ -271,7 +279,7 @@ static ssize_t npu_debug_log_read(struct file *file,
 		len = min(count, len);
 		if (copy_to_user(user_buf, (debugfs->log_buf +
 			debugfs->log_read_index), len)) {
-			pr_err("%s failed to copy to user\n", __func__);
+			NPU_ERR("failed to copy to user\n");
 			mutex_unlock(&debugfs->log_lock);
 			return -EFAULT;
 		}
@@ -289,8 +297,9 @@ static ssize_t npu_debug_log_read(struct file *file,
 	return len;
 }
 
-/*
+/* -------------------------------------------------------------------------
  * Function Implementations - DebugFS Control
+ * -------------------------------------------------------------------------
  */
 static ssize_t npu_debug_ctrl_write(struct file *file,
 		const char __user *user_buf, size_t count, loff_t *ppos)
@@ -340,8 +349,9 @@ static ssize_t npu_debug_ctrl_write(struct file *file,
 
 	return count;
 }
-/*
+/* -------------------------------------------------------------------------
  * Function Implementations - DebugFS
+ * -------------------------------------------------------------------------
  */
 int npu_debugfs_init(struct npu_device *npu_dev)
 {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2014-2020, The Linux Foundation. All rights reserved.
  * Copyright (C) 2013 Red Hat
  * Author: Rob Clark <robdclark@gmail.com>
  *
@@ -1428,6 +1428,7 @@ static int _sde_kms_setup_displays(struct drm_device *dev,
 		.get_panel_vfp = NULL,
 	};
 	static const struct sde_connector_ops dp_ops = {
+		.set_info_blob = dp_connnector_set_info_blob,
 		.post_init  = dp_connector_post_init,
 		.detect     = dp_connector_detect,
 		.get_modes  = dp_connector_get_modes,
@@ -1605,7 +1606,8 @@ static int _sde_kms_setup_displays(struct drm_device *dev,
 		/* update display cap to MST_MODE for DP MST encoders */
 		info.capabilities |= MSM_DISPLAY_CAP_MST_MODE;
 		sde_kms->dp_stream_count = dp_display_get_num_of_streams();
-		for (idx = 0; idx < sde_kms->dp_stream_count; idx++) {
+		for (idx = 0; idx < sde_kms->dp_stream_count &&
+			priv->num_encoders < max_encoders; idx++) {
 			info.h_tile_instance[0] = idx;
 			encoder = sde_encoder_init(dev, &info);
 			if (IS_ERR_OR_NULL(encoder)) {
@@ -1698,7 +1700,12 @@ static int _sde_kms_drm_obj_init(struct sde_kms *sde_kms)
 	if (!_sde_kms_get_displays(sde_kms))
 		(void)_sde_kms_setup_displays(dev, priv, sde_kms);
 
-	max_crtc_count = min(catalog->mixer_count, priv->num_encoders);
+	/* Follow user setting if preferred crtc number is set */
+	if (!of_property_read_u32(dev->dev->of_node,
+			"qcom,sde-crtc-num-pref", &max_crtc_count))
+		max_crtc_count = min(max_crtc_count, MAX_CRTCS);
+	else
+		max_crtc_count = min(catalog->mixer_count, priv->num_encoders);
 
 	/* Create the planes */
 	for (i = 0; i < catalog->sspp_count; i++) {
@@ -2701,8 +2708,15 @@ static int sde_kms_get_mixer_count(const struct msm_kms *kms,
 	mode_clock_hz = drm_fixp_mul(temp, mdp_fudge_factor);
 
 	if (mode_clock_hz > max_mdp_clock_hz ||
-			mode->hdisplay > max_mixer_width)
+			mode->hdisplay > max_mixer_width) {
 		*num_lm = 2;
+		if ((mode_clock_hz >> 1) > max_mdp_clock_hz) {
+			SDE_ERROR("[%s] clock %d exceeds max_mdp_clk %d\n",
+					mode->name, mode_clock_hz,
+					max_mdp_clock_hz);
+			return -EINVAL;
+		}
+	}
 
 	SDE_DEBUG("[%s] h=%d, v=%d, fps%d, max_mdp_pclk_hz=%llu, num_lm=%d\n",
 			mode->name, mode->htotal, mode->vtotal, mode->vrefresh,

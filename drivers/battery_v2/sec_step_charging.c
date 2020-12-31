@@ -386,6 +386,9 @@ bool sec_bat_check_dc_step_charging(struct sec_battery_info *battery)
 					battery->dc_step_chg_iin_cnt = 0;
 				}
 			}
+		} else {
+			/* Do not check input current when lcd is on or siop is not 100 since there might be quite big system current */
+			step_input = battery->dc_step_chg_step - 1;
 		}
 
 		if ((step_input < step) || (step < 0))
@@ -402,7 +405,8 @@ check_dc_step_change:
 		(step != battery->step_charging_status && step == min(min(step_vol, step_soc), step_input))) {
 		if ((battery->dc_step_chg_type & STEP_CHARGING_CONDITION_INPUT_CURRENT) &&
 			(battery->step_charging_status >= 0)) {
-			if (battery->dc_step_chg_iin_cnt < battery->pdata->dc_step_chg_iin_check_cnt) {
+			if (battery->dc_step_chg_iin_cnt < battery->pdata->dc_step_chg_iin_check_cnt &&
+				(battery->siop_level >= 100 && !battery->lcd_status)) {
 				pr_info("%s : keep step(%d), curr_cnt(%d/%d)\n",
 					__func__, battery->step_charging_status,
 					battery->dc_step_chg_iin_cnt, battery->pdata->dc_step_chg_iin_check_cnt);
@@ -558,7 +562,7 @@ int sec_dc_step_charging_dt(struct sec_battery_info *battery, struct device *dev
 			//////// debug log ////
 			for( i = 0; i < battery->pdata->num_age_step; i++) {
 				for( j = 0; j < battery->dc_step_chg_step; j++) {
-					pr_info("%s arr = %d ", __func__, pdata->dc_step_chg_cond_soc[i][j]);
+					pr_info("%s soc arr = %d ", __func__, pdata->dc_step_chg_cond_soc[i][j]);
 				}
 				pr_info("\n");
 			}
@@ -659,7 +663,7 @@ int sec_dc_step_charging_dt(struct sec_battery_info *battery, struct device *dev
 			//////// debug log ////
 			for( i = 0; i < battery->pdata->num_age_step; i++) {
 				for( j = 0; j < battery->dc_step_chg_step; j++) {
-					pr_info("%s arr = %d ", __func__, pdata->dc_step_chg_val_vfloat[i][j]);
+					pr_info("%s vfloat arr = %d ", __func__, pdata->dc_step_chg_val_vfloat[i][j]);
 				}
 				pr_info("\n");
 			}
@@ -715,7 +719,7 @@ int sec_dc_step_charging_dt(struct sec_battery_info *battery, struct device *dev
 		//////// debug log ////
 		for( i = 0; i < battery->pdata->num_age_step; i++) {
 			for( j = 0; j < battery->dc_step_chg_step; j++) {
-				pr_info("%s arr = %d ", __func__, pdata->dc_step_chg_val_iout[i][j]);
+				pr_info("%s iout arr = %d ", __func__, pdata->dc_step_chg_val_iout[i][j]);
 			}
 			pr_info("\n");
 		}

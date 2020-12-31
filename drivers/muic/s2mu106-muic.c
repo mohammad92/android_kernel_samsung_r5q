@@ -2179,6 +2179,8 @@ static irqreturn_t s2mu106_muic_attach_isr(int irq, void *data)
 	det_ret = s2mu106_muic_detect_dev_mrid_adc(muic_data);
 #endif
 attach_done:
+	if (muic_data->new_dev == ATTACHED_DEV_TA_MUIC)
+		msleep(60);
 	s2mu106_muic_handle_attached_dev(muic_data);
 
 attach_skip:

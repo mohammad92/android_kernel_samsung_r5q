@@ -23,7 +23,7 @@
 #include "cam_cpas_soc.h"
 
 static uint cam_min_camnoc_ib_bw;
-#if defined(CONFIG_SEC_M51_PROJECT)
+#if defined(CONFIG_SEC_M51_PROJECT) || defined(CONFIG_SEC_A52Q_PROJECT) || defined(CONFIG_SEC_A72Q_PROJECT) || defined(CONFIG_SEC_M42Q_PROJECT)
 static bool cam_hw_cci_started = false;
 #endif
 
@@ -976,7 +976,7 @@ static int cam_cpas_hw_start(void *hw_priv, void *start_args,
 	if (!CAM_CPAS_CLIENT_VALID(client_indx))
 		return -EINVAL;
 
-#if defined(CONFIG_SEC_M51_PROJECT)
+#if defined(CONFIG_SEC_M51_PROJECT) || defined(CONFIG_SEC_A52Q_PROJECT) || defined(CONFIG_SEC_A72Q_PROJECT) || defined(CONFIG_SEC_M42Q_PROJECT)
 	if (cam_hw_cci_started && (client_indx == 4) && 
         (strcmp(cpas_core->cpas_client[client_indx]->data.identifier, "cci") == 0)) {
 		int cnt = 20;
@@ -1073,7 +1073,7 @@ static int cam_cpas_hw_start(void *hw_priv, void *start_args,
 done:
 	mutex_unlock(&cpas_core->client_mutex[client_indx]);
 	mutex_unlock(&cpas_hw->hw_mutex);
-#if defined(CONFIG_SEC_M51_PROJECT)
+#if defined(CONFIG_SEC_M51_PROJECT) || defined(CONFIG_SEC_A52Q_PROJECT) || defined(CONFIG_SEC_A72Q_PROJECT) || defined(CONFIG_SEC_M42Q_PROJECT)
 	if ((rc == 0) && (client_indx == 4) &&
         (strcmp(cpas_client->data.identifier, "cci") == 0)) {
 		cam_hw_cci_started = true;
@@ -1194,7 +1194,7 @@ static int cam_cpas_hw_stop(void *hw_priv, void *stop_args,
 done:
 	mutex_unlock(&cpas_core->client_mutex[client_indx]);
 	mutex_unlock(&cpas_hw->hw_mutex);
-#if defined(CONFIG_SEC_M51_PROJECT)
+#if defined(CONFIG_SEC_M51_PROJECT) || defined(CONFIG_SEC_A52Q_PROJECT) || defined(CONFIG_SEC_A72Q_PROJECT) || defined(CONFIG_SEC_M42Q_PROJECT)
 	if ((rc == 0) && (client_indx == 4) &&
         (strcmp(cpas_client->data.identifier, "cci") == 0)) {
 		cam_hw_cci_started = false;

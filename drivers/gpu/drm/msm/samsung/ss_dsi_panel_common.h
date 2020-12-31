@@ -310,7 +310,7 @@ struct cmd_map {
 	int *cmd_idx;
 	int size;
 };
-/* To support model which is not using one to one (platform level - cd level) match such as BLOOM, 
+/* To support model which is not using one to one (platform level - cd level) match such as BLOOM,
   made MULTI_TO_ONE_NORMAL table to make set_normal_br_values use this when calc cd_level & cd index
  */
 enum CD_MAP_TABLE_LIST {
@@ -855,6 +855,7 @@ struct POC {
 	u32 rpos;
 	u32 rsize;
 
+	int start_addr;
 	int image_size;
 
 	/* ERASE */
@@ -1339,7 +1340,7 @@ struct samsung_display_driver_data {
 	/* UB CON DETECT */
 	struct ub_con_detect ub_con_det;
 
-	/* partial disp support 
+	/* partial disp support
 	 * -1 means panel does not support partial disp fucntion.
 	 * so, partial_disp value sould not be updated when value is -1.
 	 */
@@ -1349,6 +1350,7 @@ struct samsung_display_driver_data {
 	bool samsung_enable_splash_pba;
 
 	char window_color[2];
+	bool support_window_color;
 
 	/* force white flush to support the model can not execute gallery. */
 	int force_white_flush;

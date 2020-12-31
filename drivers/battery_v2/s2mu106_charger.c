@@ -206,7 +206,9 @@ static void regmode_vote(struct s2mu106_charger_data *charger, int voter, int va
 			pr_info("%s: OTG_TX_BUCK -> OTG or TX Abnormal\n", __func__);
 		}
 	} else {
-		s2mu106_update_reg(charger->i2c, 0x3A, 0x01, 0x03); // SET_Auto Async
+		/* Do not set Auto Async mode before BUCKOFF mode */
+		if ((set_val & REG_MODE_CHG) || (set_val & REG_MODE_BUCK))
+			s2mu106_update_reg(charger->i2c, 0x3A, 0x01, 0x03); // SET_Auto Async
 		s2mu106_update_reg(charger->i2c,
 				S2MU106_CHG_CTRL0, set_val, REG_MODE_MASK);
 		s2mu106_update_reg(charger->i2c, 0x39, 0x55, 0xFF); // prevent OTG OCP default
@@ -835,8 +837,8 @@ static void s2mu106_set_charging_efficiency(struct s2mu106_charger_data *charger
 {
 	u8 data;
 
-	cancel_delayed_work(&charger->pmeter_2lv_work);		
-	cancel_delayed_work(&charger->pmeter_3lv_work);		
+	cancel_delayed_work(&charger->pmeter_2lv_work);
+	cancel_delayed_work(&charger->pmeter_3lv_work);
 
 	if (onoff == 1) {
 		s2mu106_update_reg(charger->i2c, 0x9E,
@@ -1298,7 +1300,7 @@ static int s2mu106_chg_set_property(struct power_supply *psy,
 		break;
 #endif
 	case POWER_SUPPLY_PROP_2LV_3LV_CHG_MODE:
-		cancel_delayed_work(&charger->pmeter_2lv_work);		
+		cancel_delayed_work(&charger->pmeter_2lv_work);
 		cancel_delayed_work(&charger->pmeter_3lv_work);
 		if (val->intval) {
 			pr_info("%s : 5V->9V\n", __func__);

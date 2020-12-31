@@ -28,7 +28,7 @@ extern char rear2_cam_info[150];
 #if defined(CONFIG_SAMSUNG_REAR_TRIPLE)
 extern char rear3_cam_info[150];
 #endif
-#if defined(CONFIG_SEC_A71_PROJECT) || defined(CONFIG_SEC_M51_PROJECT)
+#if defined(CONFIG_SEC_A71_PROJECT) || defined(CONFIG_SEC_M51_PROJECT) || defined(CONFIG_SEC_A52Q_PROJECT) || defined(CONFIG_SEC_A72Q_PROJECT) ||  defined(CONFIG_SEC_M42Q_PROJECT)
 extern char rear4_cam_info[150];
 #endif
 #if defined(CONFIG_SAMSUNG_REAR_TOF)
@@ -418,7 +418,7 @@ static int32_t cam_sensor_driver_get_dt_data(struct cam_sensor_ctrl_t *s_ctrl)
 	else if (s_ctrl->id == CAMERA_3)
 		rc = cam_sensor_get_dt_camera_info(of_node, rear3_cam_info);
 #endif
-#if defined(CONFIG_SEC_A71_PROJECT) || defined(CONFIG_SEC_M51_PROJECT)
+#if defined(CONFIG_SEC_A71_PROJECT) || defined(CONFIG_SEC_M51_PROJECT) || defined(CONFIG_SEC_A52Q_PROJECT) || defined(CONFIG_SEC_A72Q_PROJECT) ||  defined(CONFIG_SEC_M42Q_PROJECT)
 	else if (s_ctrl->id == CAMERA_4)
 		rc = cam_sensor_get_dt_camera_info(of_node, rear4_cam_info);
 #endif

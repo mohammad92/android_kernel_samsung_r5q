@@ -167,6 +167,8 @@ struct cam_isp_context_state_monitor {
  * @hw_acquired:               Indicate whether HW resources are acquired
  * @init_received:             Indicate whether init config packet is received
  * @split_acquire:             Indicate whether a separate acquire is expected
+ * @bubble_frame_cnt:          Count number of frames since the req is in bubble
+ * @last_sof_timestamp         SOF timestamp of the last frame
  *
  */
 struct cam_isp_context {
@@ -195,6 +197,8 @@ struct cam_isp_context {
 	bool                             hw_acquired;
 	bool                             init_received;
 	bool                             split_acquire;
+	uint32_t                         bubble_frame_cnt;
+	uint64_t                         last_sof_timestamp;
 };
 
 /**

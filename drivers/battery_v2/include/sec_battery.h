@@ -307,6 +307,8 @@ struct sec_battery_info {
 	struct pdic_notifier_struct pdic_info;
 	struct sec_bat_pdic_list pd_list;
 #endif
+	bool update_pd_list;
+
 #if defined(CONFIG_VBUS_NOTIFIER)
 	struct notifier_block vbus_nb;
 	int muic_vbus_status;
@@ -357,6 +359,7 @@ struct sec_battery_info {
 	/* keep awake until monitor is done */
 	struct wake_lock monitor_wake_lock;
 	struct workqueue_struct *monitor_wqueue;
+	struct delayed_work mfc_work;
 	struct delayed_work monitor_work;
 #ifdef CONFIG_SAMSUNG_BATTERY_FACTORY
 	struct wake_lock lpm_wake_lock;
@@ -682,6 +685,10 @@ struct sec_battery_info {
 #if defined(CONFIG_ENG_BATTERY_CONCEPT)
 	char * get_dt_str;
 #endif
+
+	bool mfc_unknown_swelling;
+	bool mfc_unknown_fullcharged;
+	bool mfc_work_check;
 };
 
 /* event check */
@@ -789,5 +796,5 @@ void sec_bat_parse_mode_dt(struct sec_battery_info *battery);
 void sec_bat_parse_mode_dt_work(struct work_struct *work);
 u8 sec_bat_get_wireless20_power_class(struct sec_battery_info *battery);
 void sec_bat_check_battery_health(struct sec_battery_info *battery);
-
+void sec_bat_set_mfc_on(struct sec_battery_info *battery, bool always_on);
 #endif /* __SEC_BATTERY_H */

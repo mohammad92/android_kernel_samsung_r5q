@@ -3602,7 +3602,7 @@ static int _sde_plane_validate_scaler_v2(struct sde_plane *psde,
 }
 
 static int _sde_plane_validate_shared_crtc(struct sde_plane *psde,
-	struct drm_plane_state *state)
+				struct drm_plane_state *state)
 {
 	struct sde_kms *sde_kms;
 	struct sde_splash_display *splash_display;
@@ -3622,9 +3622,12 @@ static int _sde_plane_validate_shared_crtc(struct sde_plane *psde,
 
 			for (j = 0; j < MAX_DATA_PATH_PER_DSIPLAY; j++) {
 
-				if (splash_display->pipes[j].sspp == psde->pipe) {
-					SDE_DEBUG_PLANE(psde,"pipe:%d used in cont-splash on crtc:%d\n",
-						psde->pipe, splash_display->encoder->crtc->base.id);
+				if (splash_display->pipes[j].sspp ==
+						psde->pipe) {
+					SDE_ERROR_PLANE(psde,
+					"pipe:%d used in cont-splash on crtc:%d\n",
+					psde->pipe,
+					splash_display->encoder->crtc->base.id);
 					return -EINVAL;
 				}
 			}
@@ -3632,6 +3635,7 @@ static int _sde_plane_validate_shared_crtc(struct sde_plane *psde,
 	}
 
 	return 0;
+
 }
 
 static int sde_plane_sspp_atomic_check(struct drm_plane *plane,

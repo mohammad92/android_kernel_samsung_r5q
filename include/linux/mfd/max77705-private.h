@@ -386,6 +386,9 @@ struct max77705_dev {
 	int doing_irq;
 	int is_usbc_queue;
 
+	int enable_nested_irq;    
+	u8 usbc_irq;
+
 	struct max77705_platform_data *pdata;
 };
 

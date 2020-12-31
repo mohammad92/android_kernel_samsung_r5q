@@ -201,6 +201,7 @@ obj-$(CONFIG_ADSP_FACTORY)      += adsp_factory/
 obj-$(CONFIG_ESOC)              += esoc/
 # GNSS driver
 obj-$(CONFIG_GNSS_SIRF)		+= gnsssirf/
+obj-$(CONFIG_GNSS)		+= gnss/
 
 ifeq ($(CONFIG_BATTERY_SAMSUNG_V2), y)
 	obj-$(CONFIG_BATTERY_SAMSUNG)	+= battery_v2/

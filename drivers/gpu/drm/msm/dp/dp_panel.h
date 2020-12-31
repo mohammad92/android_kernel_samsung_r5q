@@ -115,7 +115,7 @@ struct dp_panel {
 	u32 max_bw_code;
 
 #ifdef CONFIG_SEC_DISPLAYPORT
-	u8 monitor_name[14];
+	u8 monitor_name[14];	/* max 13 chars + null */
 	u32 dsp_type;
 	struct dp_panel_info max_timing_info;
 #endif

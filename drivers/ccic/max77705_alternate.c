@@ -1071,7 +1071,7 @@ void max77705_set_usb_phy_completion(int kind)
 
 	usbpd_data = g_usbc_data;
 
-	if (!usbpd_data)
+	if (!usbpd_data || !usbpd_data->max77705 || !usbpd_data->max77705->cc_booting_complete)
 		return;
 
 	if (kind == 0) {

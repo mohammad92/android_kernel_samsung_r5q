@@ -144,7 +144,7 @@ static int s2mu106_hv_muic_read_reg(struct s2mu106_muic_data *muic_data, u8 reg)
 static int s2mu106_hv_muic_get_vchgin(struct s2mu106_muic_data *muic_data)
 {
 	struct power_supply *psy_pm;
-	union power_supply_propval val;
+	union power_supply_propval val = {0, };
 	int ret = 0;
 
 	if (muic_data == NULL) {

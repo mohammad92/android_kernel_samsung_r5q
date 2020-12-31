@@ -41,6 +41,9 @@
 #define TOF_SENSOR_ID_IMX316 0x0316
 #endif
 
+#define SENSOR_ID_S5KGW1 0x0971
+#define SENSOR_ID_IMX682 0x0682
+
 int cam_get_dt_power_setting_data(struct device_node *of_node,
 	struct cam_hw_soc_info *soc_info,
 	struct cam_sensor_power_ctrl_t *power_info);

@@ -45,6 +45,8 @@
 
 #define MAX_LANES             5
 #define MAX_SETTINGS_PER_LANE 43
+#define MAX_DATA_RATES              3
+#define MAX_DATA_RATE_REGS          30
 
 #define MAX_REGULATOR         5
 #define CAMX_CSIPHY_DEV_NAME "cam-csiphy-driver"
@@ -152,6 +154,30 @@ struct csiphy_reg_t {
 	int32_t  reg_data;
 	int32_t  delay;
 	uint32_t csiphy_param_type;
+};
+
+/*
+ * struct data_rate_reg_info_t
+ * @bandwidth: max bandwidth supported by this reg settings
+ * @data_rate_reg_array_size: number of reg value pairs in the array
+ * @csiphy_data_rate_regs: array of data rate specific reg value pairs
+ */
+struct data_rate_reg_info_t {
+	uint64_t bandwidth;
+	ssize_t  data_rate_reg_array_size;
+	struct csiphy_reg_t csiphy_data_rate_regs[MAX_DATA_RATE_REGS];
+};
+
+/**
+ * struct data_rate_settings_t
+ * @num_data_rate_settings: number of valid settings
+ *                          present in the data rate settings array
+ * @data_rate_settings: array of regsettings which are specific to
+ *                      data rate
+ */
+struct data_rate_settings_t {
+	ssize_t num_data_rate_settings;
+	struct data_rate_reg_info_t data_rate_settings[MAX_DATA_RATES];
 };
 
 /**

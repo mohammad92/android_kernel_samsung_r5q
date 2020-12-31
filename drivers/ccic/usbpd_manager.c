@@ -1539,7 +1539,7 @@ int usbpd_manager_get_selected_voltage(struct usbpd_data *pd_data, int selected_
 {
 #if defined(CONFIG_BATTERY_SAMSUNG) && defined(CONFIG_USB_TYPEC_MANAGER_NOTIFIER)
 	PDIC_SINK_STATUS *pdic_sink_status = &pd_noti.sink_status;
-	
+
 	int available_pdo = pdic_sink_status->available_pdo_num;
 	int volt = 0;
 
@@ -1626,8 +1626,7 @@ int usbpd_manager_evaluate_capability(struct usbpd_data *pd_data)
 			pd_current = pd_obj->power_data_obj_pps.max_current;
 #ifdef CONFIG_BATTERY_SAMSUNG
 #ifdef CONFIG_USB_TYPEC_MANAGER_NOTIFIER
-			if (pd_volt * USBPD_PPS_VOLT_UNIT <= MAX_CHARGING_VOLT)
-				available_pdo_num = i + 1;
+			available_pdo_num = i + 1;
 			pdic_sink_status->power_list[i + 1].max_voltage = pd_volt * USBPD_PPS_VOLT_UNIT;
 			pdic_sink_status->power_list[i + 1].max_current = pd_current * USBPD_PPS_CURRENT_UNIT;
 #if defined(CONFIG_PDIC_PD30)

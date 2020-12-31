@@ -42,7 +42,7 @@ extern unsigned int lpcharge;
 /*defined at: include/linux/ccic/ccic_alternate.h*/
 #define SAMSUNG_VENDOR_ID		0x04E8
 #define		DEXDOCK_PRODUCT_ID      0xA020     /* EE-MG950, DeX station */
-#define		HG950_PRODUCT_ID        0xA025     /* EE-H950  */
+#define		HG950_PRODUCT_ID        0xA025     /* EE-HG950  */
 #define		MPA2_PRODUCT_ID         0xA027     /* EE-P5000 */
 #define		DEXPAD_PRODUCT_ID       0xA029     /* EE-M5100 */
 #define		DEXCABLE_PRODUCT_ID     0xA048     /* EE-I3100 */
@@ -144,10 +144,10 @@ enum dex_support_res_t {
 	DEX_RES_3440X1440, /* UW-QHD */
 	DEX_RES_3840X2160, /* UHD */
 };
-#define DEX_RES_DFT		DEX_RES_1920X1080   /* DeX default resolution */
-#define DEX_RES_MAX		DEX_RES_3440X1440   /* DeX max resolution */
-#define DEX_FPS_MIN		50                  /* DeX min refresh rate */
-#define DEX_FPS_MAX		60                  /* DeX max refresh rate */
+#define DEX_RES_DFT	DEX_RES_1920X1080   /* DeX default resolution */
+#define DEX_RES_MAX	DEX_RES_3440X1440   /* DeX max resolution */
+#define DEX_FPS_MIN	50                  /* DeX min refresh rate */
+#define DEX_FPS_MAX	60                  /* DeX max refresh rate */
 
 static inline char *secdp_dex_res_to_string(int res)
 {
@@ -179,12 +179,34 @@ enum DEX_STATUS {
 	DEX_DURING_MODE_CHANGE,
 };
 
+struct secdp_adapter {
+	uint ven_id;
+	uint prod_id;
+};
+
+#define MON_NAME_LEN	14	/*monitor name length, max 13 chars + null*/
+
+#define MAX_NUM_HMD	32
+#define DEX_TAG_HMD	"HMD"
+
+struct secdp_sink_dev {
+	uint ven_id;		/*vendor id from CCIC*/
+	uint prod_id;		/*product id from CCIC*/
+	char monitor_name[MON_NAME_LEN];	/* from EDID */
+};
+
 struct secdp_dex {
 	struct class	*sysfs_class;
 
 	int prev;                /* previously known as "dex_now" */
 	int curr;                /* previously known as "dex_en" */
 	int setting_ui;          /* "dex_set", true if setting has Dex mode */
+	/*
+	 * 2 if resolution is changed during dex mode change.
+	 * And once dex framework reads the dex_node_stauts using dex node,
+	 * it's assigned to same value with curr.
+	 */
+	int dex_node_status;
 
 	enum dex_support_res_t res;   /* dex supported resolution */
 	char fw_ver[10];         /* firmware ver, 0:h/w, 1:s/w major, 2:s/w minor */
@@ -216,6 +238,7 @@ struct secdp_misc {
 	u8 self_test_edid[ST_EDID_SIZE];
 #endif
 
+	struct secdp_adapter	adapter;
 	struct secdp_dex	dex;
 	struct secdp_debug	debug;
 
@@ -224,11 +247,15 @@ struct secdp_misc {
 	int prefer_res_idx;   /* Index of preferred resolution */
 	int ignore_ratio;
 
-	bool cable_connected;    /* previously known as "cable_connected_phy" */
-	bool link_conf;          /* previously known as "sec_link_conf" */
-	atomic_t hpd;            /* previously known as "sec_hpd" */
-	bool reboot;             /* true if rebooted or shutdown */
-	int  hdcp_retry;         /* count if dp link is unstable during hdcp */
+	struct secdp_sink_dev  *hmd_list;  /*list of supported HMD device*/
+	struct mutex		hmd_lock;
+	bool hmd_dev;		/*true if connected sink is known HMD device*/
+
+	bool cable_connected;	/*previously known as "cable_connected_phy"*/
+	bool link_conf;		/*previously known as "sec_link_conf"*/
+	atomic_t hpd;		/*previously known as "sec_hpd"*/
+	bool reboot;		/*true if rebooted or shutdown*/
+	int  hdcp_retry;	/*count if dp link is unstable during hdcp*/
 
 	bool has_prefer;         /* true if preferred resolution*/
 	int  prefer_hdisp;       /* horizontal pixel of preferred resolution */
@@ -296,6 +323,12 @@ int secdp_power_request_gpios(struct dp_power *dp_power);
 void secdp_config_gpios_factory(int aux_sel, bool out_en);
 enum plug_orientation secdp_get_plug_orientation(void);
 bool secdp_get_reboot_status(void);
+
+bool secdp_check_hmd_dev(const char *name_to_search);
+int  secdp_store_hmd_dev(char* buf, size_t len, int num);
+#ifdef CONFIG_SEC_DISPLAYPORT_ENG
+int  secdp_show_hmd_dev(char *buf);
+#endif
 
 void secdp_dex_res_init(void);
 void secdp_dex_do_reconnecting(void);
